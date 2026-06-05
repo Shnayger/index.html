@@ -36,28 +36,23 @@
     </div>
 
     <script>
-        // API вашего сервера
-        const API_BASE_URL = 'http://178.172.244.12:8081';
+        // API через shutoutlab.boats (как у сканера)
+        const API_BASE_URL = 'https://shutoutlab.boats';
         
         let usersData = [];
         let changedUsers = new Set();
         
-        // Telegram Web App только для кнопки закрытия
         let tg = null;
         try {
             if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
                 tg = window.Telegram.WebApp;
                 tg.ready();
                 tg.expand();
-                console.log('✅ Telegram WebApp initialized');
             }
-        } catch(e) {
-            console.log('⚠️ Not in Telegram');
-        }
+        } catch(e) {}
         
         document.getElementById('closeBtn').onclick = () => tg ? tg.close() : window.close();
         
-        // Загрузка пользователей через API
         async function loadUsers() {
             const statsDiv = document.getElementById('stats');
             const container = document.getElementById('users-list');
@@ -66,10 +61,8 @@
             container.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
             
             try {
-                console.log('🔄 Fetch:', `${API_BASE_URL}/api/users`);
-                const response = await fetch(`${API_BASE_URL}/api/users`);
+                const response = await fetch(`${API_BASE_URL}/api_users.php`);
                 const data = await response.json();
-                console.log('📦 Response:', data);
                 
                 if (data.success) {
                     usersData = data.users;
@@ -79,8 +72,7 @@
                     container.innerHTML = `<div class="error">❌ Ошибка: ${data.error}</div>`;
                 }
             } catch(e) {
-                console.error('❌ Error:', e);
-                container.innerHTML = `<div class="error">❌ Ошибка: ${e.message}<br><br>Проверьте API: ${API_BASE_URL}/api/users</div>`;
+                container.innerHTML = `<div class="error">❌ Ошибка: ${e.message}</div>`;
             }
         }
         
@@ -101,7 +93,7 @@
             showMessage('💾 Сохранение...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/roles`, {
+                const response = await fetch(`${API_BASE_URL}/api_save_roles.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ changes })
@@ -121,7 +113,7 @@
                     showMessage(`✅ Сохранено ${data.saved} изменений`);
                     setTimeout(() => loadUsers(), 1500);
                 } else {
-                    showMessage(`❌ Ошибка сохранения`);
+                    showMessage('❌ Ошибка сохранения');
                 }
             } catch(e) {
                 showMessage(`❌ Ошибка: ${e.message}`);
@@ -187,8 +179,6 @@
             return div.innerHTML;
         }
         
-        // Запуск
-        console.log('🚀 App started, API:', API_BASE_URL);
         loadUsers();
     </script>
 </body>
