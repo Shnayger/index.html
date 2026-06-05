@@ -36,7 +36,7 @@
     </div>
 
     <script>
-        // API через shutoutlab.boats (как у сканера)
+        // ========== ГЛАВНОЕ: API через shutoutlab.boats ==========
         const API_BASE_URL = 'https://shutoutlab.boats';
         
         let usersData = [];
@@ -48,8 +48,11 @@
                 tg = window.Telegram.WebApp;
                 tg.ready();
                 tg.expand();
+                console.log('✅ Telegram WebApp initialized');
             }
-        } catch(e) {}
+        } catch(e) {
+            console.log('⚠️ Not in Telegram WebApp');
+        }
         
         document.getElementById('closeBtn').onclick = () => tg ? tg.close() : window.close();
         
@@ -58,11 +61,14 @@
             const container = document.getElementById('users-list');
             
             statsDiv.innerHTML = '📊 Загрузка...';
-            container.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
+            container.innerHTML = '<div class="loading">⏳ Загрузка пользователей...</div>';
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api_users.php`);
+                console.log('🔄 Запрос к:', `${API_BASE_URL}/api/users`);
+                const response = await fetch(`${API_BASE_URL}/api/users`);
                 const data = await response.json();
+                
+                console.log('📦 Получено:', data.total, 'пользователей');
                 
                 if (data.success) {
                     usersData = data.users;
@@ -72,6 +78,7 @@
                     container.innerHTML = `<div class="error">❌ Ошибка: ${data.error}</div>`;
                 }
             } catch(e) {
+                console.error('❌ Ошибка:', e);
                 container.innerHTML = `<div class="error">❌ Ошибка: ${e.message}</div>`;
             }
         }
@@ -93,7 +100,7 @@
             showMessage('💾 Сохранение...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api_save_roles.php`, {
+                const response = await fetch(`${API_BASE_URL}/api/roles`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ changes })
@@ -179,6 +186,7 @@
             return div.innerHTML;
         }
         
+        console.log('🚀 Запуск, API:', API_BASE_URL);
         loadUsers();
     </script>
 </body>
